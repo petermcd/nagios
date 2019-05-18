@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Set default values
+warninglevel='0.5'
+criticallevel='0.8'
+host=""
+ip="-4"
+
+while getopts h:w:c: opt; do
+  case $opt in
+    4)
+      ip="-4"
+      ;;
+    6)
+      ip="-6"
+      ;;
+    w)
+      warninglevel=$OPTARG
+      ;;
+    c)
+      criticallevel=$OPTARG
+      ;;
+    h)
+      host=$OPTARG
+      ;;
+    \?)
+      echo "Usage ssh_cpu.sh [-w] [-c] [-h]"
+      exit 4
+      ;;
+  esac
+done
+
+if [ -z "$host" ]; then
+  echo "UNKNOWN - No host specified"
+  exit 4
+else
+  commandoutput=`ssh $ip $host 'uptime'`
+fi
+
+commandoutputarray=($commandoutput)
+commandoutputarraylength=${#commandoutputarray[@]}
+
+one=${commandoutputarray[`expr $commandoutputarraylength - 3`]}
+one="${one//,}"
+five=${commandoutputarray[`expr $commandoutputarraylength - 2`]}
+five="${five//,}"
+fifteen=${commandoutputarray[`expr $commandoutputarraylength - 1`]}
+
+if [ $(bc <<< "$criticallevel <= $one") -eq 1 ]; then
+  echo "CRITICAL - CPU load greater than threshold $one"
+  exit 3
+elif [ $(bc <<< "$warninglevel <= $one") -eq 1 ]; then
+  echo "WARNING - CPU load greater than threshold $one"
+  exit 2
+else
+  echo "OK - Fine load is $one"
+  exit 1
+fi
