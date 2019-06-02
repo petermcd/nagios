@@ -7,49 +7,30 @@ host=""
 ip="-4"
 user=`whoami`
 
-while getopts 46hH:w:c:u: opt; do
+while getopts hw:c: opt; do
   case $opt in
-    u)
-      user=$OPTARG
-      ;;
-    4)
-      ip="-4"
-      ;;
-    6)
-      ip="-6"
-      ;;
     w)
       warninglevel=$OPTARG
       ;;
     c)
       criticallevel=$OPTARG
       ;;
-    H)
-      host=$OPTARG
-      ;;
     h)
       echo "Checks the cpu load of a server"
-      echo "Usage ssh_cpu.sh [-w] [-c] [-H] [-4] [-6] [-h]"
+      echo "Usage ssh_cpu.sh [-w] [-c] [-h]"
       echo "    -w set the load level considered a warning"
       echo "    -c set the load level considered critical"
-      echo "    -4 use ipv4"
-      echo "    -6 use ipv6"
-      echo "    -H set the host"
       echo "    -h display this help text"
+      exit 3
       ;;
     \?)
-      echo "Usage ssh_cpu.sh [-w] [-c] [-H]"
+      echo "Usage ssh_cpu.sh [-w] [-c]"
       exit 3
       ;;
   esac
 done
 
-if [ -z "$host" ]; then
-  echo "UNKNOWN - No host specified"
-  exit 3
-else
-  commandoutput=`ssh $ip $user@$host 'uptime'`
-fi
+commandoutput=`uptime`
 
 commandoutputarray=($commandoutput)
 commandoutputarraylength=${#commandoutputarray[@]}
@@ -61,10 +42,10 @@ five="${five//,}"
 fifteen=${commandoutputarray[`expr $commandoutputarraylength - 1`]}
 
 if [ $(bc <<< "$criticallevel <= $one") -eq 1 ]; then
-  echo "CRITICAL - CPU load greater than threshold $one"
+  echo "CPU CRITICAL - CPU load greater than threshold $one"
   exit 2
 elif [ $(bc <<< "$warninglevel <= $one") -eq 1 ]; then
-  echo "WARNING - CPU load greater than threshold $one"
+  echo "CPU WARNING - CPU load greater than threshold $one"
   exit 1
 else
   echo "CPU OK - Load is $one"
