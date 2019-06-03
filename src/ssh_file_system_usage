@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Set default values
+warninglevel='70'
+criticallevel='80'
+
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+while getopts hw:c: opt; do
+  case $opt in
+    w)
+      warninglevel=$OPTARG
+      ;;
+    c)
+      criticallevel=$OPTARG
+      ;;
+    h)
+      echo "Checks the cpu load of a server"
+      echo "Usage ssh_cpu.sh [-w] [-c] [-h]"
+      echo "    -w set the usage level considered a warning"
+      echo "    -c set the usage level considered critical"
+      echo "    -h display this help text"
+      exit 3
+      ;;
+    \?)
+      echo "Usage ssh_cpu.sh [-w] [-c]"
+      exit 3
+      ;;
+  esac
+done
+
+warning=0
+warningmessage=()
+critical=0
+criticalmessage=()
+
+IFS='
+'
+
+commandoutput=`df -h | grep "[0-9]\{1,3\}%"`
+
+commandoutputarray=($commandoutput)
+
+for i in "${commandoutputarray[@]}"
+do
+:
+    IFS=' '
+    set -- $i
+    mountpoint="$6"
+    level=${5%?}
+    if [ $level -gt $criticallevel ]; then
+      critical=$((critical+1))
+      criticalmessage+=("$mountpoint ($level%)")
+    elif [ $level -gt $warninglevel ]; then
+      warning=$((warning+1))
+      warningmessage+=("$mountpoint ($level%)")
+    fi
+done
+
+if [ $critical -gt 0 ]; then
+  message=`join_by ", " "${criticalmessage[@]}"`
+  echo "USAGE CRITICAL - Usage greater than threshold $criticallevel% on the following mount points: $message"
+  exit 2
+elif [ $warning -gt 0 ]; then
+  message=`join_by , "${warningmessage[@]}"`
+  echo "USAGE WARNING - Usage greater than threshold $warninglevel% on the following mount points: $message"
+  exit 1
+else
+  echo "USAGE OK"
+  exit 0
+fi

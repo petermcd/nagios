@@ -3,9 +3,6 @@
 # Set default values
 warninglevel='0.5'
 criticallevel='0.8'
-host=""
-ip="-4"
-user=`whoami`
 
 while getopts hw:c: opt; do
   case $opt in
