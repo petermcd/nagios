@@ -51,7 +51,6 @@ do
     used="$3"
     free="$4"
     utilisation=$(( $used/($total/100) ))
-    echo $utilisation
     if [ $utilisation -gt $criticallevel ]; then
       critical=$((critical+1))
       criticalmessage+=("$memtype ($level%)")
