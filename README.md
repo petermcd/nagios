@@ -27,3 +27,12 @@ point exceeds the critical or warning level.
 * -w - At what usage level a warning is triggered (defaults 70)
 * -c - At what usage level critical is triggered (defaults 80)
 * -h - Display help information
+
+### ssh_memory
+
+Simple bash script that alerts if the usage level of memory
+exceeds the critical or warning level.
+
+* -w - At what memory utilisation a warning is triggered (defaults 60)
+* -c - At what memory utilisation critical is triggered (defaults 75)
+* -h - Display help information

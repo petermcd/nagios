@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Set default values
+warninglevel='60'
+criticallevel='75'
+
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+while getopts hw:c: opt; do
+  case $opt in
+    w)
+      warninglevel=$OPTARG
+      ;;
+    c)
+      criticallevel=$OPTARG
+      ;;
+    h)
+      echo "Checks the memory utilisation of a server"
+      echo "Usage ssh_memory.sh [-w] [-c] [-h]"
+      echo "    -w set the memory utilisation considered a warning"
+      echo "    -c set the memory utilisation considered critical"
+      echo "    -h display this help text"
+      exit 3
+      ;;
+    \?)
+      echo "Usage ssh_memory.sh [-w] [-c]"
+      exit 3
+      ;;
+  esac
+done
+
+warning=0
+warningmessage=()
+critical=0
+criticalmessage=()
+
+IFS='
+'
+
+commandoutput=`free | grep :`
+
+commandoutputarray=($commandoutput)
+
+for i in "${commandoutputarray[@]}"
+do
+:
+    IFS=' '
+    set -- $i
+    memtype="$1"
+    total="$2"
+    used="$3"
+    free="$4"
+    utilisation=$(( $used/($total/100) ))
+    echo $utilisation
+    if [ $utilisation -gt $criticallevel ]; then
+      critical=$((critical+1))
+      criticalmessage+=("$memtype ($level%)")
+    elif [ $utilisation -gt $warninglevel ]; then
+      warning=$((warning+1))
+      warningmessage+=("$memtype ($level%)")
+    fi
+done
+
+if [ $critical -gt 0 ]; then
+  message=`join_by ", " "${criticalmessage[@]}"`
+  echo "MEMORY CRITICAL - Usage greater than threshold $criticallevel% on the following memory: $message"
+  exit 2
+elif [ $warning -gt 0 ]; then
+  message=`join_by , "${warningmessage[@]}"`
+  echo "MEMORY WARNING - Usage greater than threshold $warninglevel% on the following memory: $message"
+  exit 1
+else
+  echo "MEMORY OK"
+  exit 0
+fi
