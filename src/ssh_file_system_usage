@@ -23,7 +23,7 @@ while getopts hw:c: opt; do
       exit 3
       ;;
     \?)
-      echo "Usage ssh_cpu.sh [-w] [-c]"
+      echo "Usage ssh_file_system.sh [-w] [-c]"
       exit 3
       ;;
   esac
