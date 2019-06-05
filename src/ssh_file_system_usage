@@ -15,8 +15,8 @@ while getopts hw:c: opt; do
       criticallevel=$OPTARG
       ;;
     h)
-      echo "Checks the cpu load of a server"
-      echo "Usage ssh_cpu.sh [-w] [-c] [-h]"
+      echo "Checks the mount point usage of a server"
+      echo "Usage ssh_file_system.sh [-w] [-c] [-h]"
       echo "    -w set the usage level considered a warning"
       echo "    -c set the usage level considered critical"
       echo "    -h display this help text"
